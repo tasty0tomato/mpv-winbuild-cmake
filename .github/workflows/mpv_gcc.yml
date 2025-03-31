@@ -143,7 +143,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: mpv-${{ matrix.bit }}
-          path: release_${{ matrix.bit }}/mpv-${{ env.arch }}*
+          path: release_${{ matrix.bit }}/mpv*-${{ env.arch }}*
 
       - name: Cleaning build directory
         if: always()
