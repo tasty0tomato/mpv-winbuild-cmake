@@ -95,6 +95,8 @@ function(force_rebuild_git _name)
 file(WRITE ${stamp_dir}/reset_head.sh
 "#!/bin/bash
 set -e
+# Source directory absent: download step will handle re-cloning.
+if [[ ! -d \"${source_dir}/.git\" ]]; then exit 0; fi
 if [[ ! -f \"${stamp_dir}/${_name}-patch\"  || \"${stamp_dir}/${_name}-download\" -nt \"${stamp_dir}/${_name}-patch\" || ! -f \"${stamp_dir}/HEAD\" || \"$(cat ${stamp_dir}/HEAD)\" != \"$(git -C ${source_dir} rev-parse @{u})\" ]]; then
     git -C ${source_dir} reset --hard ${reset} -q
     if [[ -z \"${git_reset}\" ]]; then
@@ -142,6 +144,8 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
             COMMAND ${EXEC} rm ${_name}-gitclone-lastrun.txt
             ERROR_QUIET
         )
+        # Source directory absent: clear download stamp so ninja re-clones.
+        file(REMOVE ${stamp_dir}/${_name}-download)
     endif()
 endfunction()
 
