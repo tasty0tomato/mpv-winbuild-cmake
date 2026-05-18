@@ -150,7 +150,7 @@ jobs:
           name: mpv-${{ matrix.bit }}
           path: |
             release_${{ matrix.bit }}/mpv-${{ env.arch }}*.7z
-            release_${{ matrix.bit }}/mpv-*-${{ env.arch }}.7z
+            release_${{ matrix.bit }}/mpv-*-${{ env.arch }}*.7z
 
       - name: Uploading ${{ matrix.bit }} debug
         uses: actions/upload-artifact@master
