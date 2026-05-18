@@ -1,3 +1,9 @@
+# If the source directory is absent (repository cache miss), clear the download
+# stamp so ExternalProject re-clones instead of skipping download with no source.
+if(NOT EXISTS "${SOURCE_LOCATION}")
+    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/xz-prefix/src/xz-stamp/xz-download")
+endif()
+
 ExternalProject_Add(xz
     GIT_REPOSITORY https://github.com/tukaani-project/xz.git
     SOURCE_DIR ${SOURCE_LOCATION}
