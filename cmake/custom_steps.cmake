@@ -143,11 +143,9 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
             LOG 1
         )
     else()
-        execute_process(
-            WORKING_DIRECTORY ${stamp_dir}
-            COMMAND ${EXEC} rm ${_name}-gitclone-lastrun.txt
-            ERROR_QUIET
-        )
+        # Use cmake-native file(REMOVE) rather than execute_process to avoid
+        # silent failures when the exec wrapper is not yet executable.
+        file(REMOVE ${stamp_dir}/${_name}-gitclone-lastrun.txt)
         # Source directory absent or working tree empty: clear download stamp so ninja re-clones.
         file(REMOVE ${stamp_dir}/${_name}-download)
     endif()
