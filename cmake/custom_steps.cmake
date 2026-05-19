@@ -129,11 +129,23 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
         LOG 1
     )
 
-    # A partial clone (--filter=tree:0) can leave .git present but the working
-    # tree empty if the lazy blob/tree fetch was interrupted. Detect that by
-    # checking whether any non-hidden files exist at the source root.
-    file(GLOB _source_visible LIST_DIRECTORIES true "${source_dir}/*")
-    if(EXISTS ${source_dir}/.git AND _source_visible)
+    # Detect a broken partial clone (--filter=tree:0): .git may exist but the
+    # working tree checkout can be incomplete if a lazy blob/tree fetch was
+    # interrupted, leaving tracked files missing. Use git to check directly.
+    set(_source_ok FALSE)
+    if(EXISTS ${source_dir}/.git)
+        execute_process(
+            COMMAND git -C ${source_dir} ls-files --deleted
+            OUTPUT_VARIABLE _git_deleted
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+            RESULT_VARIABLE _git_rc
+        )
+        if(_git_rc EQUAL 0 AND "${_git_deleted}" STREQUAL "")
+            set(_source_ok TRUE)
+        endif()
+    endif()
+    if(_source_ok)
         ExternalProject_Add_Step(${_name} check-git
             DEPENDERS download
             INDEPENDENT TRUE
@@ -143,10 +155,7 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
             LOG 1
         )
     else()
-        # Use cmake-native file(REMOVE) rather than execute_process to avoid
-        # silent failures when the exec wrapper is not yet executable.
         file(REMOVE ${stamp_dir}/${_name}-gitclone-lastrun.txt)
-        # Source directory absent or working tree empty: clear download stamp so ninja re-clones.
         file(REMOVE ${stamp_dir}/${_name}-download)
     endif()
 endfunction()
