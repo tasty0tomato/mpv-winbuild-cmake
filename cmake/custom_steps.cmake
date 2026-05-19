@@ -129,7 +129,11 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
         LOG 1
     )
 
-    if(EXISTS ${source_dir}/.git)
+    # A partial clone (--filter=tree:0) can leave .git present but the working
+    # tree empty if the lazy blob/tree fetch was interrupted. Detect that by
+    # checking whether any non-hidden files exist at the source root.
+    file(GLOB _source_visible LIST_DIRECTORIES true "${source_dir}/*")
+    if(EXISTS ${source_dir}/.git AND _source_visible)
         ExternalProject_Add_Step(${_name} check-git
             DEPENDERS download
             INDEPENDENT TRUE
@@ -144,7 +148,7 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
             COMMAND ${EXEC} rm ${_name}-gitclone-lastrun.txt
             ERROR_QUIET
         )
-        # Source directory absent: clear download stamp so ninja re-clones.
+        # Source directory absent or working tree empty: clear download stamp so ninja re-clones.
         file(REMOVE ${stamp_dir}/${_name}-download)
     endif()
 endfunction()
