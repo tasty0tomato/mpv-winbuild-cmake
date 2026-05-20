@@ -129,9 +129,9 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
         LOG 1
     )
 
-    # Detect a broken partial clone (--filter=tree:0): .git may exist but the
-    # working tree checkout can be incomplete if a lazy blob/tree fetch was
-    # interrupted, leaving tracked files missing. Use git to check directly.
+    # Detect a broken partial clone: .git may exist but the working tree can be
+    # incomplete (empty index from --filter=tree:0, or missing blobs). Require
+    # both no deleted files AND at least one tracked file in the index.
     set(_source_ok FALSE)
     if(EXISTS ${source_dir}/.git)
         execute_process(
@@ -141,7 +141,15 @@ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_
             ERROR_QUIET
             RESULT_VARIABLE _git_rc
         )
-        if(_git_rc EQUAL 0 AND "${_git_deleted}" STREQUAL "")
+        execute_process(
+            COMMAND git -C ${source_dir} ls-files --cached
+            OUTPUT_VARIABLE _git_cached
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+            RESULT_VARIABLE _git_cached_rc
+        )
+        if(_git_rc EQUAL 0 AND "${_git_deleted}" STREQUAL ""
+           AND _git_cached_rc EQUAL 0 AND NOT "${_git_cached}" STREQUAL "")
             set(_source_ok TRUE)
         endif()
     endif()
