@@ -26,6 +26,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 jobs:
   build_mpv:
     name: Building mpv
@@ -179,6 +182,9 @@ jobs:
   release:
     name: Upload releases
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
     needs: build_mpv
     if: ${{ github.event.inputs.github_release == 'true' }}
     env:

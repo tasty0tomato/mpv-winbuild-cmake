@@ -26,6 +26,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 jobs:
   build_mpv:
     name: Building mpv
@@ -202,6 +205,9 @@ jobs:
   release:
     name: Upload releases
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
     if: ${{ github.repository == 'shinchiro/mpv-winbuild-cmake' }}
     needs: build_mpv
     env:
@@ -328,6 +334,8 @@ jobs:
   call_workflow:
     name: Run mpv_gcc
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     if: ${{ github.repository == 'shinchiro/mpv-winbuild-cmake' }}
     needs: build_mpv
     env:

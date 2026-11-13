@@ -11,6 +11,9 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   build_llvm:
     name: Building LLVM and Clang
@@ -205,6 +208,8 @@ jobs:
   call_workflow:
     name: Run mpv_clang
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     needs: build_llvm
     env:
       GH_TOKEN: ${{ github.token }}
